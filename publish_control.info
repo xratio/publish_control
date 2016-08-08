@@ -1,0 +1,5 @@
+﻿name = Publish control
+description = This module allow control publish status of nodes.
+package = FFW
+core = 7.x
+version = 1.0

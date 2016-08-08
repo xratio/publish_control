@@ -1,0 +1,110 @@
+﻿<?php
+/**
+ * Implements hook_permission().
+ */
+function publish_control_permission() {
+  return array(
+    'access publish_control' => array(
+      'title' => t('Publish control page'),
+      'description' => t('Administer permission for publish_control page'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function publish_control_menu() {
+  $items['publish_control'] = array(
+    'title' => 'Publish control',
+    'description' => 'Publish control',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('publish_control_form'),
+    'access arguments' => array('access publish_control'),
+    'menu_name' => 'main-menu',
+    'type' => MENU_NORMAL_ITEM,
+   );
+   
+  return $items;
+}
+
+/**
+ * Implements hook_form().
+ */
+function publish_control_form($form, &$form_state){
+  $form = array();
+  
+  // Use node_load_multiple to load all nodes from specific content type
+  // then put node title in options for select type field
+  $type = "article"; 
+  $nodes = node_load_multiple(array(), array('type' => $type));
+  $nt_options = array();
+  foreach($nodes as $items){
+    $nt_options[$items->nid] = $items->title;
+  }
+  
+  $form['node_title'] = array(
+    '#type' => 'select',
+    '#title' => t('Select node'),
+    '#options' => $nt_options,
+  );
+  
+  $form['node_status'] = array(
+    '#type' => 'select',
+    '#title' => t(''),
+    '#options' => array(
+      0 => 'Unpublish',
+	  1 => 'Publish',
+	),
+	'#default_value' => 1,
+  );
+  
+  $form['node_sticky'] = array(
+    '#type' => 'select',
+    '#title' => t(''),
+    '#options' => array(
+      0 => 'Unsticky',
+	  1 => 'Sticky',
+	),
+	'#default_value' => 1,
+  );
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update')
+  );
+  
+  $form['action']['delete'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete'),
+	'#submit' => array('publish_control_delete_submit'),
+  );
+   
+  return $form;
+}
+
+/**
+ * Implements hook_form_submit().
+ */
+function publish_control_form_submit($form, &$form_state){
+  $nid = $form_state['values']['node_title'];
+  $node = node_load($nid);
+  $node->sticky = $form_state['values']['node_sticky'];
+  $node->status = $form_state['values']['node_status'];
+  node_save($node);
+  
+  drupal_set_message($form['node_title']['#options'][$form_state['values']['node_title']] . " was modified!");
+}
+
+/**
+ * Implements publish_control_delete_submit().
+ */
+function publish_control_delete_submit($form, &$form_state){
+  $nid = $nid = $form_state['values']['node_title'];
+  $node = node_load($nid);
+  node_delete($nid);
+  
+  drupal_set_message($form['node_title']['#options'][$form_state['values']['node_title']] . " was deleted!");
+  
+  drupal_goto('publish_control');
+}
