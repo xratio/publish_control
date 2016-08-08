@@ -105,6 +105,5 @@ function publish_control_delete_submit($form, &$form_state){
   node_delete($nid);
   
   drupal_set_message($form['node_title']['#options'][$form_state['values']['node_title']] . " was deleted!");
-  
   drupal_goto('publish_control');
 }
